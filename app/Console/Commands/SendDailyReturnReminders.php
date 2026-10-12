@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\Status;
 use App\Jobs\SendBookReturnReminder;
 use App\Models\Loan;
 use Carbon\Carbon;
@@ -30,32 +31,37 @@ class SendDailyReturnReminders extends Command
     {
         $today = Carbon::today();
 
-        // Contoh: reminder 3 hari sebelum jatuh tempo
+        // Reminder 3 hari sebelum jatuh tempo
         $reminderDate = $today->copy()->addDays(3);
 
-        // Atau reminder untuk yang hampir jatuh tempo (misal besok atau lusa)
+        // Reminder untuk yang mendekati jatuh tempo (H-3 s.d H-1)
         $nearDue = Loan::where('due_date', '>=', $today)
             ->where('due_date', '<=', $reminderDate)
-            ->whereNull('returned_date')           // belum dikembalikan
-            ->where(function ($q) {
+            ->whereNull('returned_date')
+            ->whereIn('status', [Status::LOANED, Status::OVERDUE])
+            ->where(function ($q) use ($today) {
                 $q->whereNull('last_reminder_sent_at')
-                    ->orWhere('last_reminder_sent_at', '<', Carbon::today()->subDays(1));
+                    ->orWhere('last_reminder_sent_at', '<', $today);
             })
             ->get();
 
-        // Untuk yang sudah overdue
+        // Reminder untuk yang sudah lewat jatuh tempo (overdue)
         $overdue = Loan::where('due_date', '<', $today)
             ->whereNull('returned_date')
+            ->whereIn('status', [Status::LOANED, Status::OVERDUE])
+            ->where(function ($q) use ($today) {
+                $q->whereNull('last_reminder_sent_at')
+                    ->orWhere('last_reminder_sent_at', '<', $today);
+            })
             ->get();
 
         $this->info("Mengirim reminder ke {$nearDue->count()} peminjaman mendekati jatuh tempo...");
         $this->info("Mengirim reminder overdue ke {$overdue->count()} peminjaman...");
 
         foreach ($nearDue->merge($overdue) as $loan) {
-            SendBookReturnReminder::dispatch($loan)
-                ->onQueue('reminders');   // queue khusus biar prioritas
+            SendBookReturnReminder::dispatch($loan);
         }
 
-        $this->info('Semua reminder telah di-dispatch ke queue!');
+        $this->info('Semua reminder telah diproses!');
     }
 }

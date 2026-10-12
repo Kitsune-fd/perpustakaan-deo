@@ -43,7 +43,7 @@
 
         <p>Terima kasih atas kerjasamanya dalam menjaga ketersediaan buku untuk anggota perpustakaan lainnya.</p>
 
-        <a href="{{ url('/peminjaman/saya') }}" class="button">Cek Status & Kembalikan Buku</a>
+        <a href="{{ url('/student/loan') }}" class="button">Cek Status & Kembalikan Buku</a>
 
         <p>Jika Anda sudah mengembalikan buku ini, abaikan email ini. Jika ada kendala, hubungi petugas perpustakaan segera.</p>
 

@@ -2,19 +2,23 @@
 
 namespace App\Jobs;
 
+use App\Mail\BookReturnReminder;
+use App\Mail\OverdueBookReminder;
+use App\Models\Loan;
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use App\Mail\BookReturnReminder;       // Mailable yang sudah kamu buat
-use App\Models\Loan;
 use Illuminate\Support\Facades\Mail;
 
 class SendBookReturnReminder implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
     protected $loan;
+
     /**
      * Create a new job instance.
      */
@@ -28,8 +32,13 @@ class SendBookReturnReminder implements ShouldQueue
      */
     public function handle(): void
     {
-        Mail::to($this->loan->user->email)
-            ->queue(new BookReturnReminder($this->loan));
+        $isOverdue = Carbon::today()->gt($this->loan->due_date);
+
+        $mailable = $isOverdue
+            ? new OverdueBookReminder($this->loan)
+            : new BookReturnReminder($this->loan);
+
+        Mail::to($this->loan->user->email)->send($mailable);
 
         $this->loan->update(['last_reminder_sent_at' => now()]);
     }

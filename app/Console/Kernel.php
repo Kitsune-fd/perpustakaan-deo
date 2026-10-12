@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Console;
+namespace App\Console\Kernel;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
@@ -14,12 +14,9 @@ class Kernel extends ConsoleKernel
     {
         // Jalankan setiap hari jam 08:00 pagi (WIB)
         $schedule->command('reminders:return')
-                ->everyMinute()
-                // ->dailyAt('00:00')
+                ->dailyAt('08:00')
+                // ->everyMinute() // Aktifkan baris ini jika sedang melakukan demo / pengujian lokal
                 ->timezone('Asia/Jakarta');
-
-        // Optional: cek setiap jam untuk overdue baru (kalau mau lebih agresif)
-        // $schedule->command('reminders:return')->hourly();
     }
 
     /**

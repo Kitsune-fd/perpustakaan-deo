@@ -48,7 +48,7 @@
 
         <p>Kami harap Anda segera mengembalikan buku tersebut. Jika ada alasan khusus, silakan hubungi petugas perpustakaan untuk pengaturan lebih lanjut.</p>
 
-        <a href="{{ url('/peminjaman/saya') }}" class="button">Lihat Detail & Kembalikan Sekarang</a>
+        <a href="{{ url('/student/loan') }}" class="button">Lihat Detail & Kembalikan Sekarang</a>
 
         <p>Terima kasih atas perhatian dan kerjasamanya.</p>
     </div>
